@@ -46,7 +46,7 @@ of memory the Puppet servers tries to assume and also sets the alt_dns_name conf
 ## References
 * https://puppet.com/docs/puppet/4.6/type.html
 
-## /etc/motd - Define Content for Message of the Day
+## /etc/motd - Part One
 
 ### Objective
   Create a Puppet manifest that will create and manage static contents of /etc/motd
@@ -133,7 +133,7 @@ Change `server = util01` to `server = puppet`
 3. Run puppet `puppet agent --test --server util06`. Did Puppet run succesfully this time?
 
 
-## /etc/motd  : Static file instead of content
+## /etc/motd - Part Two : Specify file instead of content
 
 ### Resources
 
@@ -160,7 +160,7 @@ class motd {
 4. `vi /etc/puppetlabs/code/environments/production/modules/motd/files/motd.txt`
 5. `puppet agent --test`
 
-## /etc/motd : Use Template to define content of Message of the Day
+## /etc/motd - Part Three : Templates
 
 ### References 
 
@@ -203,7 +203,7 @@ class motd {
 
 5. `puppet agent --test`
 
-## /etc/motd : Use Hiera to define values for Message of the Day
+## /etc/motd : Part Four : Hiera
 
 ### References
 
@@ -277,58 +277,6 @@ MOTD you would not read it anyway and just go about your business.
 ```
 
 8. `puppet agent --test`
-
-## /etc/motd - Install fortune
-
-1. Install CentOS Fortune
-`vi /etc/puppetlabs/code/environments/production/modules/motd/manifests/init.pp`
-Add
-```
-  package { 'fortune':
-    ensure => latest,
-    name   => 'fortune-mod',
-  }
-```
-2. `puppet agent --test` What Happens
-3. Add CentOS Epel repository to yum
-`vi /etc/puppetlabs/code/environments/production/modules/motd/manifests/init.pp`
-Add after the fortune package decleration
-```
-  package { 'epel-release':
-    ensure => latest,
-  }
-```
-4. `puppet agent --test1. What Happened this time?
-5. Set `ensure => absent` for both packages and rerun puppet
-6. Running puppet twice is bad. Set dependencies
-7. Modify fortune package resource decleration. Change ensure to present.
-```
-  package { 'fortune':
-    ensure  => absent,
-    name    => 'fortune-mod',
-    require => Package['epel-release'],
-  }
-```
-8. Have puppet update MOTD with random fortune message every time it runs
-Remove content from file resource. Now just ensure it is there.
-```
-  file { '/etc/motd':
-
-    ensure  => present,
-    mode    => '0755',
-    owner   => 'root',
-    group   => 'root',
-  }
-<...>
- exec { "update_motd":
-   command => "/usr/bin/fortune > /etc/motd",
-   require => File['/etc/motd'],
- }
-```
-*Extra credit. Remove /etc/motd and rerun puppet. What does it do?*
-*Might be tempted to use exec if resource does not exist. Use defines or module with custom resource types/providers*
-
-
 
 # Memcache
 
