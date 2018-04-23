@@ -327,7 +327,7 @@ Remove content from file resource. Now just ensure it is there.
 ```
 *Extra credit. Remove /etc/motd and rerun puppet. What does it do?*
 *Might be tempted to use exec if resource does not exist. Use defines or module with custom resource types/providers*
-
+*Best practice is to avoid this, puppet always makes changes. Modifies return code and can affect monitoring*
 
 
 # Memcache
@@ -478,6 +478,36 @@ class memcache (
 puppet agent --test
 service memcached stop
 puppet agent --test
+```
+
+# Puppet Development Kit
+1. Add to init.pp
+```
+  exec { "get_pdk":
+    command => '/bin/curl "https://puppet-pdk.s3.amazonaws.com/pdk/1.4.1.2/repos/el/7/puppet5/x86_64/pdk-1.4.1.2-1.el7.x86_64.rpm" > /tmp/pdk-1.4.1.2-1.el7.x86_64.rpm',
+    creates => '/tmp/pdk-1.4.1.2-1.el7.x86_64.rpm'
+  }
+
+```
+2. Run puppet twice. What is different between the two runs?
+3. 
+```
+  exec { "get_pdk":
+    command => '/bin/curl "https://puppet-pdk.s3.amazonaws.com/pdk/1.4.1.2/repos/el/7/puppet5/x86_64/pdk-1.4.1.2-1.el7.x86_64.rpm" > /tmp/pdk-1.4.1.2-1.el7.x86_64.rpm',
+    creates => '/tmp/pdk-1.4.1.2-1.el7.x86_64.rpm'
+  } ~>
+  exec { "install_pdk":
+    command => '/bin/rpm -ivh /tmp/pdk-1.4.1.2-1.el7.x86_64.rpm',
+    refreshonly => true,
+  }
+```
+4. Run puppet, what happens? Remove /tmp/pdk-1.4.1.2-1.el7.x86_64.rpm and rerun puppet
+
+5. ```
+cd /etc/puppetlabs/code/environments/production/modules/
+cd motd
+pdk convert
+pdk validate
 ```
 
 # References
